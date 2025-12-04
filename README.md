@@ -67,7 +67,6 @@ This connects S3 to the Flask app.
     pip install streamlit boto3 pandas
     ```
 2.  Open `dashboard.py` and update the `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, and `BUCKET_NAME`.
-    > **Security Note:** Do not commit `dashboard.py` to public repositories with hardcoded keys. Use environment variables for production.
 
 -----
 
