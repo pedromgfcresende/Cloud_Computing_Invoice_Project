@@ -5,7 +5,7 @@ This project is an automated, serverless invoice processing system. It allows us
 
 ## Project Structure
 
-  * [cite_start]**`application.py`**: A Flask microservice (intended for Elastic Beanstalk) that handles the AI extraction logic, VAT math validation, and data formatting[cite: 1].
+  * **`application.py`**: A Flask microservice (intended for Elastic Beanstalk) that handles the AI extraction logic, VAT math validation, and data formatting.
   * **`lambda.py`**: An AWS Lambda function that triggers on S3 uploads. It acts as the orchestrator: grabbing text via Rekognition, calling the Flask AI service, and saving results to CSV.
   * **`testing.py`**: A local script to test the Flask endpoint with mock text or images.
   * **`requirements.txt`**: Python dependencies for the Flask environment.
@@ -20,8 +20,8 @@ This project is an automated, serverless invoice processing system. It allows us
 4.  **AI Analysis**: The Lambda sends the image (Base64) and raw text to the **Flask Application** (`application.py`).
 5.  **Extraction & Validation**:
       * GPT-4o extracts the Vendor, Date, Total, and VAT.
-      * [cite_start]**Cross-Check**: The app verifies that extracted numbers actually exist in the raw Rekognition text[cite: 1].
-      * [cite_start]**Math Check**: The app verifies that `Total` matches the `VAT` + `Rate` logic[cite: 1].
+      * **Cross-Check**: The app verifies that extracted numbers actually exist in the raw Rekognition text.
+      * **Math Check**: The app verifies that `Total` matches the `VAT` + `Rate` logic.
 6.  **Reporting**: The Lambda appends the validated data to `financial_report.csv` in the S3 bucket.
 7.  **Visualization**: The Streamlit dashboard reads the updated CSV from S3 and displays the metrics.
 
@@ -105,12 +105,6 @@ You can test the Flask logic without deploying to AWS using `testing.py`.
 
 The system implements strict "Hallucination Guards" in `application.py`:
 
-  * **Rekognition Cross-Check**: If GPT extract a number (e.g., "100.00"), the system ensures that number physically appears in the raw text detected by AWS Rekognition. [cite_start]If not, it flags an error[cite: 1].
-  * **VAT Math Logic**: It calculates if `Total / (1 + VAT_Rate) * VAT_Rate` roughly equals the extracted `VAT Amount`. [cite_start]If the math doesn't add up, the invoice is flagged[cite: 1].
+  * **Rekognition Cross-Check**: If GPT extract a number (e.g., "100.00"), the system ensures that number physically appears in the raw text detected by AWS Rekognition. If not, it flags an error.
+  * **VAT Math Logic**: It calculates if `Total / (1 + VAT_Rate) * VAT_Rate` roughly equals the extracted `VAT Amount`. If the math doesn't add up, the invoice is flagged.
 
------
-
-### Known Issues / Troubleshooting
-
-  * **CSV Format**: Ensure `financial_report.csv` headers in S3 match what the dashboard expects (`Total`, `VAT`, `ProcessedAt`).
-  * **Lambda Timeout**: Ensure your Lambda timeout is set to at least **30 seconds**, as GPT-4o and network requests can take time.
