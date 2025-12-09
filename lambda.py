@@ -14,7 +14,7 @@ s3_client = boto3.client('s3')
 rekognition_client = boto3.client('rekognition')
 
 
-BEANSTALK_URL = "http://invoiceaiagent-env.eba-sh8rsafh.eu-central-1.elasticbeanstalk.com/" 
+BEANSTALK_URL = "" 
 ENDPOINT = f"{BEANSTALK_URL}/process_invoice"
 
 
@@ -84,6 +84,8 @@ def update_csv_in_s3(bucket, data):
         
     s3_client.put_object(Bucket=bucket, Key=csv_key, Body=csv_buffer.getvalue())
 
+# ---- Lambda Function ----
+
 def lambda_handler(event, context):
     try:
 
@@ -96,11 +98,10 @@ def lambda_handler(event, context):
         raw_text = get_text_from_rekognition(bucket, key)
         image_base64 = get_image_base64(bucket, key)
         
-        # 3. Process with AI (Beanstalk)
+
         service_response = call_beanstalk_service(raw_text, image_base64)
         csv_row = service_response.get('csv_row')
         
-        # 4. Save Result
         if csv_row:
             update_csv_in_s3(bucket, csv_row)
 

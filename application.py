@@ -23,24 +23,17 @@ def check_numbers_in_rekognition(invoice_data, raw_text):
     """
     if not raw_text:
         return True # Skip check if no raw text provided
-        
-    # Normalize raw text (remove spaces, maybe commas depending on format)
-    # Simple strategy: Check if the string representation of the number exists
-    # We strip periods from the raw text to handle format differences (e.g. 1.000 vs 1000)
+
     normalized_raw = raw_text.replace('.', '').replace(',', '.')
     
-    # Check Total
     total_val = invoice_data.get('total')
     if total_val:
-        # Check both formatted (1,000.00) and unformatted (1000.00) if possible, 
-        # but here we compare cleaned strings.
+
         clean_total = clean_number_string(total_val).replace(',', '')
         if clean_total not in normalized_raw:
-             # Try simple partial match on original if strict failed (e.g. OCR might have spaces)
              if str(total_val) not in raw_text:
                  return False
 
-    # Check VAT
     vat_val = invoice_data.get('vat')
     if vat_val and float(vat_val) > 0:
         clean_vat = clean_number_string(vat_val).replace(',', '')
@@ -57,21 +50,19 @@ def validate_vat_math(invoice_data):
     try:
         total = float(invoice_data.get('total', 0))
         vat = float(invoice_data.get('vat', 0))
-        rate_percent = float(invoice_data.get('vat_rate', 0)) # Expecting e.g. 20 for 20%
+        rate_percent = float(invoice_data.get('vat_rate', 0)) 
 
         if rate_percent == 0 and vat == 0:
             return True
             
         if rate_percent == 0:
-            return False # VAT exists but rate is 0
+            return False 
 
         rate_decimal = rate_percent / 100.0
         
-        # Formula: VAT portion = Total - (Total / (1 + rate))
-        # Equivalent to: Total / (1 + rate) * rate
         calculated_vat = (total / (1 + rate_decimal)) * rate_decimal
         
-        # Check difference with tolerance for rounding (e.g. 0.05)
+   
         if abs(calculated_vat - vat) < 0.05:
             return True
             
@@ -89,7 +80,7 @@ def process_invoice():
     Expects JSON payload:
     {
         "text": "Raw OCR text (optional if image provided)",
-        "image_base64": "Base64 encoded image string (optional if text provided)"
+        "image": "Base64 encoded image string (optional if text provided)"
     }
     Returns:
     {
@@ -164,7 +155,7 @@ def process_invoice():
                 "status": "error",
                 "data": invoice_data,
                 "csv_row": f"ERROR,AI_ERROR - {error_reason},0,0,{get_current_timestamp()}"
-            }), 200 # Returning 200 so lambda treats it as a 'processed' event, just with error data
+            }), 200 
         
         # Prepare CSV Row
         vendor = invoice_data.get('vendor', 'Unknown').replace(',', ' ') 
